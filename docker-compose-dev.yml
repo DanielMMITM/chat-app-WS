@@ -1,0 +1,18 @@
+name: chat-app
+include:
+   - ../chat-app-front/docker-compose-dev.yml
+services:
+  backend:
+    image: chat-app-back-dev-image
+    container_name: chat-app-back-dev-container
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    networks:
+      - chat-app
+networks:
+  chat-app:
+    driver: bridge
