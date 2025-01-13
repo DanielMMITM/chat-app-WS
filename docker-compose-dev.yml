@@ -9,10 +9,23 @@ services:
       context: .
       dockerfile: Dockerfile-dev
     restart: unless-stopped
+    volumes:
+      - chat-app-api:/chat-app-api/src
     ports:
       - 8080:8080
     networks:
       - chat-app
+    user: springUser
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /chat-app-api/src
+          ignore:
+            - ./target
+    command: /chat-app-api/mvnw spring-boot:run
+volumes:
+  chat-app-api:
 networks:
   chat-app:
     driver: bridge

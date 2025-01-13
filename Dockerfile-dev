@@ -1,19 +1,25 @@
-FROM openjdk:23-jdk-oraclelinux9 AS builder
+FROM openjdk:23-jdk-oraclelinux9
 
 RUN groupadd -g 1234 springGroup && useradd -m -u 1234 -g springGroup springUser
-USER springUser:springGroup
+USER springUser
 
 WORKDIR /chat-app-api
 
-ARG JAR_FILE=target/chat-app-0.0.1-SNAPSHOT.jar
-ARG LOCAL_URL=http://localhost:8080
+COPY pom.xml .
+COPY .mvn ./.mvn
+COPY mvnw .
 
-COPY ${JAR_FILE} app.jar
+RUN /chat-app-api/mvnw dependency:go-offline
+
+COPY src ./src
+
+RUN /chat-app-api/mvnw clean install
+
+ARG LOCAL_URL=http://localhost:8080
 
 HEALTHCHECK --interval=5s \
             --timeout=3s \
             CMD curl -f ${LOCAL_URL}/health || exit 1
 
+RUN chown springUser:springGroup /chat-app-api
 RUN chown springUser:springGroup .
-
-ENTRYPOINT ["java","-jar","/chat-app-api/app.jar"]
